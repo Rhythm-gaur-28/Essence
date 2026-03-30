@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { products, brands, categories, getProductsByFilter } from '@/data/mockData';
+import { productAPI, brandAPI, categoryAPI } from '@/lib/api';
+import { Product, Brand, Category } from '@/types';
 
 const scentFamilies = ['floral', 'woody', 'oriental', 'fresh', 'gourmand'];
 
@@ -21,32 +22,66 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [page, setPage] = useState(1);
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isNewArrival = searchParams.get('is_new_arrival') === 'true';
   const isFeatured = searchParams.get('is_featured') === 'true';
   const search = searchParams.get('search') || '';
 
-  const filtered = useMemo(() => {
-    let result = [...products];
+  // Load brands and categories once
+  useEffect(() => {
+    const loadStaticData = async () => {
+      try {
+        const [brandsData, categoriesData] = await Promise.all([
+          brandAPI.getAll(),
+          categoryAPI.getAll(),
+        ]);
+        setBrands(brandsData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Failed to load brands/categories:', error);
+      }
+    };
 
-    if (selectedBrands.length) result = result.filter(p => selectedBrands.includes(p.brand_id));
-    if (selectedCategories.length) result = result.filter(p => selectedCategories.includes(p.category_id));
-    if (selectedScents.length) result = result.filter(p => selectedScents.includes(p.scent_family));
-    if (priceRange[0] > 0) result = result.filter(p => (p.discount_price || p.price) >= priceRange[0]);
-    if (priceRange[1] < 20000) result = result.filter(p => (p.discount_price || p.price) <= priceRange[1]);
-    if (isNewArrival) result = result.filter(p => p.is_new_arrival);
-    if (isFeatured) result = result.filter(p => p.is_featured);
-    if (search) {
-      const s = search.toLowerCase();
-      result = result.filter(p => p.name.toLowerCase().includes(s) || p.brand_name.toLowerCase().includes(s));
-    }
+    loadStaticData();
+  }, []);
 
-    if (sort === 'price_asc') result.sort((a, b) => (a.discount_price || a.price) - (b.discount_price || b.price));
-    else if (sort === 'price_desc') result.sort((a, b) => (b.discount_price || b.price) - (a.discount_price || a.price));
-    else if (sort === 'rating') result.sort((a, b) => b.rating - a.rating);
+  // Load products with filters
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await productAPI.getAll({
+          brand_id: selectedBrands.length === 1 ? selectedBrands[0] : undefined,
+          category_id: selectedCategories.length === 1 ? selectedCategories[0] : undefined,
+          scent_family: selectedScents.length === 1 ? selectedScents[0] : undefined,
+          min_price: priceRange[0] > 0 ? priceRange[0] : undefined,
+          max_price: priceRange[1] < 20000 ? priceRange[1] : undefined,
+          is_featured: isFeatured || undefined,
+          is_new_arrival: isNewArrival || undefined,
+          sort,
+          search: search || undefined,
+          page,
+          limit: 12,
+        });
 
-    return result;
-  }, [selectedBrands, selectedCategories, selectedScents, priceRange, sort, isNewArrival, isFeatured, search]);
+        setProducts(data.products || []);
+        setTotalProducts(data.total || 0);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [selectedBrands, selectedCategories, selectedScents, priceRange, sort, isNewArrival, isFeatured, search, page]);
 
   const toggleBrand = (id: number) => setSelectedBrands(prev => prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]);
   const toggleCategory = (id: number) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
@@ -69,7 +104,7 @@ const Shop = () => {
           <h1 className="font-heading text-2xl md:text-3xl font-bold">
             {search ? `Results for "${search}"` : isNewArrival ? 'New Arrivals' : isFeatured ? 'Best Picks' : 'Shop All'}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">{filtered.length} fragrances</p>
+          <p className="text-sm text-muted-foreground mt-1">{totalProducts} fragrances</p>
         </div>
         <div className="flex items-center gap-3">
           <select value={sort} onChange={e => setSort(e.target.value)}
@@ -150,10 +185,53 @@ const Shop = () => {
 
         {/* Product Grid */}
         <div className="flex-1">
-          {filtered.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
-              {filtered.map(p => <ProductCard key={p.id} product={p} />)}
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="text-center">
+                <p className="text-muted-foreground">Loading fragrances...</p>
+              </div>
             </div>
+          ) : products.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 md:gap-6">
+                {products.map(p => <ProductCard key={p.id} product={p} />)}
+              </div>
+              
+              {/* Pagination */}
+              {totalProducts > 12 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <button 
+                    onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                    disabled={page === 1}
+                    className="px-3 py-2 rounded-lg border border-border disabled:opacity-50 text-sm"
+                  >
+                    Previous
+                  </button>
+                  
+                  {Array.from({ length: Math.ceil(totalProducts / 12) }, (_, i) => i + 1).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`px-3 py-2 rounded-lg text-sm ${
+                        page === p
+                          ? 'bg-gold text-white'
+                          : 'border border-border hover:bg-muted'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  
+                  <button 
+                    onClick={() => setPage(prev => prev + 1)}
+                    disabled={page >= Math.ceil(totalProducts / 12)}
+                    className="px-3 py-2 rounded-lg border border-border disabled:opacity-50 text-sm"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-20">
               <p className="text-3xl mb-2">🌸</p>

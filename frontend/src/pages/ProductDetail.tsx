@@ -1,23 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star, Minus, Plus, ArrowLeft } from 'lucide-react';
-import { products, reviews as mockReviews, formatPrice } from '@/data/mockData';
+import { productAPI, reviewAPI } from '@/lib/api';
+import { Product, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import ProductCard from '@/components/ProductCard';
 import toast from 'react-hot-toast';
 
+const formatPrice = (price: number) => {
+  return `₹${price.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+};
+
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find(p => p.id === Number(id));
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { isAuthenticated, user } = useAuth();
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [qty, setQty] = useState(1);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
-  const [localReviews, setLocalReviews] = useState(mockReviews);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  // Load product details, reviews, and related products
+  useEffect(() => {
+    const loadProductData = async () => {
+      try {
+        setIsLoading(true);
+        const [productData, reviewsData] = await Promise.all([
+          productAPI.getById(Number(id!)),
+          reviewAPI.getByProduct(Number(id!)),
+        ]);
+
+        setProduct(productData);
+        setReviews(reviewsData);
+
+        // Load related products from same brand
+        if (productData.brand_id) {
+          const relatedData = await productAPI.getAll({
+            brand_id: productData.brand_id,
+            limit: 4,
+          });
+          setRelatedProducts(relatedData.products?.filter(p => p.id !== productData.id).slice(0, 4) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load product:', error);
+        toast.error('Failed to load product details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (id) {
+      loadProductData();
+    }
+  }, [id]);
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product.id, qty);
+      toast.success('Added to cart!');
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      toast.error('Please login to write a review');
+      return;
+    }
+    
+    if (!product) return;
+
+    try {
+      setIsSubmittingReview(true);
+      const newReview = await reviewAPI.create(product.id, {
+        rating: reviewRating,
+        comment: reviewComment,
+      });
+      
+      setReviews(prev => [newReview, ...prev]);
+      setReviewComment('');
+      setReviewRating(5);
+      toast.success('Review submitted!');
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+      toast.error('Failed to submit review');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -31,23 +120,8 @@ const ProductDetail = () => {
     );
   }
 
-  const productReviews = localReviews.filter(r => r.product_id === product.id);
-  const relatedProducts = products.filter(p => p.brand_id === product.brand_id && p.id !== product.id).slice(0, 4);
   const wishlisted = isInWishlist(product.id);
-
-  const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isAuthenticated) { toast.error('Please login to write a review'); return; }
-    const newReview = {
-      id: Date.now(), user_id: user!.id, user_name: user!.name,
-      product_id: product.id, rating: reviewRating, comment: reviewComment,
-      created_at: new Date().toISOString().split('T')[0],
-    };
-    setLocalReviews(prev => [newReview, ...prev]);
-    setReviewComment('');
-    setReviewRating(5);
-    toast.success('Review submitted!');
-  };
+  const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
 
   return (
     <div className="container mx-auto px-4 md:px-8 py-8">
@@ -72,10 +146,10 @@ const ProductDetail = () => {
           <div className="flex items-center gap-2 mb-4">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`w-4 h-4 ${i < Math.round(product.rating) ? 'fill-primary text-primary' : 'text-border'}`} />
+                <Star key={i} className={`w-4 h-4 ${i < Math.round(avgRating) ? 'fill-primary text-primary' : 'text-border'}`} />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">({product.review_count} reviews)</span>
+            <span className="text-sm text-muted-foreground">({reviews.length} reviews)</span>
           </div>
 
           {/* Price */}
@@ -123,7 +197,7 @@ const ProductDetail = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={() => addToCart(product, qty)} className="btn-gold flex items-center gap-2 text-sm flex-1 justify-center">
+            <button onClick={handleAddToCart} className="btn-gold flex items-center gap-2 text-sm flex-1 justify-center">
               <ShoppingBag className="w-4 h-4" /> Add to Cart
             </button>
             <button onClick={() => toggleWishlist(product)}
@@ -136,7 +210,7 @@ const ProductDetail = () => {
 
       {/* Reviews */}
       <section className="mb-16">
-        <h2 className="font-heading text-xl font-bold mb-6">Reviews ({productReviews.length})</h2>
+        <h2 className="font-heading text-xl font-bold mb-6">Reviews ({reviews.length})</h2>
 
         {isAuthenticated && (
           <form onSubmit={handleSubmitReview} className="bg-card rounded-xl p-6 border border-border mb-8">
@@ -151,12 +225,14 @@ const ProductDetail = () => {
             <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
               placeholder="Share your thoughts..." rows={3}
               className="w-full bg-muted rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 mb-3 resize-none" />
-            <button type="submit" className="btn-gold text-xs py-2 px-6">Submit Review</button>
+            <button type="submit" disabled={isSubmittingReview} className="btn-gold text-xs py-2 px-6">
+              {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+            </button>
           </form>
         )}
 
         <div className="space-y-4">
-          {productReviews.length > 0 ? productReviews.map(r => (
+          {reviews.length > 0 ? reviews.map(r => (
             <div key={r.id} className="bg-card rounded-xl p-5 border border-border">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -167,7 +243,7 @@ const ProductDetail = () => {
                     ))}
                   </div>
                 </div>
-                <span className="text-xs text-muted-foreground">{r.created_at}</span>
+                <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
               </div>
               <p className="text-sm text-muted-foreground">{r.comment}</p>
             </div>

@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { formatPrice } from '@/data/mockData';
+import { orderAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
+
+const formatPrice = (price: number) => {
+  return `₹${price.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+};
 
 const steps = ['Address', 'Payment', 'Review'];
 
@@ -13,11 +17,31 @@ const Checkout = () => {
   const [step, setStep] = useState(0);
   const [address, setAddress] = useState({ full_name: '', phone: '', street: '', city: '', state: '', pincode: '' });
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi' | 'card'>('cod');
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  const handlePlaceOrder = () => {
-    toast.success('Order placed successfully!');
-    clearCart();
-    navigate('/order-success');
+  const handlePlaceOrder = async () => {
+    try {
+      setIsPlacingOrder(true);
+      const orderData = await orderAPI.create({
+        items: cartItems.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.product.discount_price || item.product.price,
+        })),
+        shipping_address: address,
+        payment_method: paymentMethod,
+        coupon_code: appliedCoupon?.code,
+      });
+      
+      toast.success('Order placed successfully!');
+      clearCart();
+      navigate(`/order-success?orderId=${orderData.id}`);
+    } catch (error) {
+      console.error('Failed to place order:', error);
+      toast.error('Failed to place order. Please try again.');
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   if (cartItems.length === 0) {
@@ -119,8 +143,10 @@ const Checkout = () => {
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setStep(1)} className="btn-outline-gold text-sm py-2">Back</button>
-            <button onClick={handlePlaceOrder} className="btn-gold text-sm flex-1">Place Order</button>
+            <button onClick={() => setStep(1)} className="btn-outline-gold text-sm py-2" disabled={isPlacingOrder}>Back</button>
+            <button onClick={handlePlaceOrder} disabled={isPlacingOrder} className="btn-gold text-sm flex-1">
+              {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+            </button>
           </div>
         </div>
       )}

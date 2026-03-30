@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { products, brands, formatPrice } from '@/data/mockData';
+import { productAPI, brandAPI, bannerAPI } from '@/lib/api';
+import { Product, Brand, Banner } from '@/types';
 import heroImg from '@/assets/perfume-hero.png';
 import floralImg from '@/assets/perfume-floral.png';
 import woodyImg from '@/assets/perfume-woody.png';
@@ -20,8 +21,36 @@ const scentFamilies = [
 ];
 
 const Home = () => {
-  const newArrivals = products.filter(p => p.is_new_arrival).slice(0, 4);
-  const featured = products.filter(p => p.is_featured).slice(0, 4);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [featured, setFeatured] = useState<Product[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [arrivals, featuredData, bannersData, brandsData] = await Promise.all([
+          productAPI.getAll({ is_new_arrival: true, limit: 4 }),
+          productAPI.getAll({ is_featured: true, limit: 4 }),
+          bannerAPI.getActive(),
+          brandAPI.getAll(),
+        ]);
+
+        setNewArrivals(arrivals.products || []);
+        setFeatured(featuredData.products || []);
+        setBanners(bannersData || []);
+        setBrands(brandsData || []);
+      } catch (error) {
+        console.error('Failed to load home data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   return (
     <div className="min-h-screen">
