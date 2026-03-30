@@ -89,11 +89,16 @@ sequelize
   .authenticate()
   .then(() => {
     console.log("Database connected successfully.");
+    // Sync all models with database (creates tables if they don't exist)
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => {
+    console.log("Database synchronized (tables created/updated).");
+    app.listen(config.port, () => {
+      console.log(`Server running on http://localhost:${config.port}`);
+    });
   })
   .catch((err) => {
-    console.error("Unable to connect to database:", err.message);
+    console.error("Database error:", err.message);
+    process.exit(1);
   });
-
-app.listen(config.port, () => {
-  console.log(`Server running on http://localhost:${config.port}`);
-});
