@@ -37,8 +37,8 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Home</Link>
             <Link to="/shop" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Shop</Link>
-            <Link to="/shop" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Brands</Link>
-            <Link to="/shop" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
+            <Link to="/brands" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Brands</Link>
+            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">About</Link>
           </nav>
 
           {/* Right Icons */}
@@ -118,7 +118,7 @@ const Navbar = () => {
           <nav className="md:hidden py-4 border-t border-border animate-fade-in flex flex-col gap-3">
             <Link to="/" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Home</Link>
             <Link to="/shop" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Shop</Link>
-            <Link to="/shop" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Brands</Link>
+            <Link to="/brands" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground">Brands</Link>
           </nav>
         )}
       </div>
