@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, Tag, Ticket, Image } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, Tag, Ticket } from 'lucide-react';
 
 const links = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -9,7 +9,6 @@ const links = [
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/brands', icon: Tag, label: 'Brands' },
   { to: '/admin/coupons', icon: Ticket, label: 'Coupons' },
-  { to: '/admin/banners', icon: Image, label: 'Banners' },
 ];
 
 const AdminSidebar = () => {
