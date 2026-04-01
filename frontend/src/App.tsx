@@ -25,6 +25,8 @@ import ManageUsers from '@/pages/admin/ManageUsers';
 import ManageBrands from '@/pages/admin/ManageBrands';
 import ManageCoupons from '@/pages/admin/ManageCoupons';
 import ManageBanners from '@/pages/admin/ManageBanners';
+import About from "@/pages/About";
+import Brands from "@/pages/Brands";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -50,6 +52,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/brands" element={<Brands />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />

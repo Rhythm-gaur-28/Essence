@@ -19,17 +19,85 @@
 
 ---
 
+## 🚀 Quick Start (with Docker)
+
+### Prerequisites
+- Docker & Docker Compose installed
+- Node.js 16+ (for running the Node.js server locally)
+
+### Setup Steps
+
+1. **Start MySQL Container**
+   ```bash
+   docker-compose up -d
+   ```
+   This starts:
+   - **MySQL**: Port 3306 (accessible at `127.0.0.1:3306`)
+   - **phpMyAdmin**: Port 8081 (accessible at `http://localhost:8081`)
+
+2. **Login to phpMyAdmin** (optional, for database visualization)
+   - URL: `http://localhost:8081`
+   - User: `essence_user`
+   - Password: `essence_password`
+
+3. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Seed Database with Dummy Data** (Optional but recommended)
+   ```bash
+   npm run seed
+   ```
+   This populates 15 products, 5 brands, test users, reviews, coupons, and banners.
+   See [SEEDING_GUIDE.md](./SEEDING_GUIDE.md) for details.
+
+5. **Run the Backend Server**
+   ```bash
+   npm run dev
+   ```
+   Server runs at `http://localhost:5000`
+
+6. **Verify Connection**
+   - Check that the server starts without database errors
+   - Make a test request: `GET http://localhost:5000/api/products`
+
+### Stop Containers
+```bash
+docker-compose down
+```
+
+### Reset Database (Remove Volumes)
+```bash
+docker-compose down -v
+```
+
+### Database Connection Details
+| Property | Value |
+|----------|-------|
+| Host | `127.0.0.1` |
+| Port | `3306` |
+| User | `essence_user` |
+| Password | `essence_password` |
+| Database | `essence_db` |
+
+⚠️ **Local Only**: These containers are configured for localhost access only (port binding only on 127.0.0.1).
+
+---
+
 ## ⚙️ Environment Variables (.env)
 
 ```env
 PORT=5000
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=yourpassword
-DB_NAME=brand_essence
+DB_HOST=127.0.0.1
+DB_USER=essence_user
+DB_PASSWORD=essence_password
+DB_NAME=essence_db
 JWT_SECRET=your_jwt_secret_key
 JWT_EXPIRES_IN=7d
 ```
+
+**Note**: When using Docker Compose, these values match the `docker-compose.yml` configuration. For production, change `JWT_SECRET` and database credentials.
 
 ---
 

@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "seed": "node seeds/seed.js",
+    "clear-db": "node seeds/clearDb.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: essence-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: essence_db
+      MYSQL_USER: essence_user
+      MYSQL_PASSWORD: essence_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - essence-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: essence-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: essence_user
+      PMA_PASSWORD: essence_password
+      PMA_ROOT_PASSWORD: root_password
+    ports:
+      - "8081:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - essence-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  essence-network:
+    driver: bridge
