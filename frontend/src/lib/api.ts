@@ -38,7 +38,10 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const requestUrl = error.config?.url || '';
-    const isAuthRequest = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+    const isAuthRequest =
+      requestUrl.includes('/auth/login') ||
+      requestUrl.includes('/auth/register') ||
+      requestUrl.includes('/auth/change-password');
 
     // Do not force-redirect on auth endpoints; let UI show proper error messages.
     if (error.response?.status === 401 && !isAuthRequest) {
@@ -88,6 +91,11 @@ export const authAPI = {
 
   getMe: async () => {
     const { data } = await apiClient.get('/auth/me');
+    return data;
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const { data } = await apiClient.put('/auth/change-password', { currentPassword, newPassword });
     return data;
   },
 };

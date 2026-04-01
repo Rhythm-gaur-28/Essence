@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { orderAPI } from '@/lib/api';
+import { authAPI, orderAPI } from '@/lib/api';
 import { formatPrice } from '@/lib/format';
 import { Order } from '@/types';
+import toast from 'react-hot-toast';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -19,6 +20,10 @@ const Profile = () => {
   const [email, setEmail] = useState(user?.email || '');
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -36,6 +41,37 @@ const Profile = () => {
 
     loadOrders();
   }, []);
+
+  const handlePasswordUpdate = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('Please fill all password fields');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('New password and confirm password do not match');
+      return;
+    }
+
+    try {
+      setIsUpdatingPassword(true);
+      const response = await authAPI.changePassword(currentPassword, newPassword);
+      toast.success(response?.message || 'Password updated successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to update password';
+      toast.error(message);
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 md:px-8 py-8 max-w-4xl">
@@ -107,10 +143,24 @@ const Profile = () => {
           <h2 className="font-heading text-lg font-semibold mt-8 mb-4">Change Password</h2>
           <div className="space-y-4">
             <input type="password" placeholder="Current Password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
               className="w-full bg-muted rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
             <input type="password" placeholder="New Password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
               className="w-full bg-muted rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
-            <button className="btn-gold text-sm">Update Password</button>
+            <input type="password" placeholder="Confirm New Password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              className="w-full bg-muted rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30" />
+            <button
+              onClick={handlePasswordUpdate}
+              disabled={isUpdatingPassword}
+              className="btn-gold text-sm disabled:opacity-60"
+            >
+              {isUpdatingPassword ? 'Updating...' : 'Update Password'}
+            </button>
           </div>
         </div>
       )}

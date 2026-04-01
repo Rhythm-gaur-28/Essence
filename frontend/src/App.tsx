@@ -24,7 +24,6 @@ import ManageOrders from '@/pages/admin/ManageOrders';
 import ManageUsers from '@/pages/admin/ManageUsers';
 import ManageBrands from '@/pages/admin/ManageBrands';
 import ManageCoupons from '@/pages/admin/ManageCoupons';
-import ManageBanners from '@/pages/admin/ManageBanners';
 import About from "@/pages/About";
 import Brands from "@/pages/Brands";
 
@@ -69,7 +68,6 @@ const App = () => (
                   <Route path="users" element={<ManageUsers />} />
                   <Route path="brands" element={<ManageBrands />} />
                   <Route path="coupons" element={<ManageCoupons />} />
-                  <Route path="banners" element={<ManageBanners />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
