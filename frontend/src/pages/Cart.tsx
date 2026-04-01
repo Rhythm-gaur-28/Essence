@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag, Tag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { formatPrice } from '@/data/mockData';
+import { formatPrice } from '@/lib/format';
 
 const Cart = () => {
   const { cartItems, cartCount, cartTotal, updateQty, removeFromCart, appliedCoupon, applyCoupon, removeCoupon, discountAmount, finalTotal } = useCart();

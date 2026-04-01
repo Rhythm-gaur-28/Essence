@@ -49,7 +49,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         await removeFromWishlist(product.id);
       } else {
         await wishlistAPI.add(product.id);
-        setWishlistItems(prev => [...prev, { id: Date.now(), product_id: product.id, product }]);
+        await loadWishlist();
         toast.success('Added to wishlist');
       }
     } catch (error: any) {
@@ -61,7 +61,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const removeFromWishlist = async (productId: number) => {
     try {
       await wishlistAPI.remove(productId);
-      setWishlistItems(prev => prev.filter(item => item.product.id !== productId));
+      await loadWishlist();
       toast.success('Removed from wishlist');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to remove from wishlist';

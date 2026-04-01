@@ -79,6 +79,24 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/admin", adminRoutes);
 
+// Convert upload/parser errors into JSON responses instead of generic 500 HTML.
+app.use((err, req, res, next) => {
+  if (!err) return next();
+
+  if (err.name === "MulterError") {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ message: "Image must be 5MB or smaller" });
+    }
+    return res.status(400).json({ message: err.message || "Upload error" });
+  }
+
+  if (err.message && err.message.includes("Invalid file type")) {
+    return res.status(400).json({ message: err.message });
+  }
+
+  return res.status(500).json({ message: "Internal server error" });
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Server is running" });

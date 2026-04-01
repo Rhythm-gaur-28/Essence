@@ -156,6 +156,24 @@ const createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    const parsedPrice = parseFloat(price);
+    const parsedDiscountPrice = discount_price ? parseFloat(discount_price) : null;
+    const parsedStock = stock !== undefined && stock !== '' ? parseInt(stock, 10) : 0;
+    const parsedSizeMl = size_ml ? parseInt(size_ml, 10) : null;
+
+    if (!Number.isFinite(parsedPrice)) {
+      return res.status(400).json({ message: 'Invalid price value' });
+    }
+    if (parsedDiscountPrice !== null && !Number.isFinite(parsedDiscountPrice)) {
+      return res.status(400).json({ message: 'Invalid discount price value' });
+    }
+    if (!Number.isInteger(parsedStock) || parsedStock < 0) {
+      return res.status(400).json({ message: 'Invalid stock value' });
+    }
+    if (parsedSizeMl !== null && (!Number.isInteger(parsedSizeMl) || parsedSizeMl <= 0)) {
+      return res.status(400).json({ message: 'Invalid size value' });
+    }
+
     // Check if brand and category exist
     const brand = await Brand.findByPk(brand_id);
     const category = await Category.findByPk(category_id);
@@ -178,10 +196,10 @@ const createProduct = async (req, res) => {
       top_notes,
       middle_notes,
       base_notes,
-      price: parseFloat(price),
-      discount_price: discount_price ? parseFloat(discount_price) : null,
-      stock: parseInt(stock) || 0,
-      size_ml: size_ml ? parseInt(size_ml) : null,
+      price: parsedPrice,
+      discount_price: parsedDiscountPrice,
+      stock: parsedStock,
+      size_ml: parsedSizeMl,
       image_url,
       is_featured: is_featured === 'true',
       is_new_arrival: is_new_arrival === 'true',

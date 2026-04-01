@@ -24,9 +24,8 @@ const Checkout = () => {
       setIsPlacingOrder(true);
       const orderData = await orderAPI.create({
         items: cartItems.map(item => ({
-          product_id: item.product_id,
+          product_id: item.product_id ?? item.product.id,
           quantity: item.quantity,
-          unit_price: item.product.discount_price || item.product.price,
         })),
         shipping_address: address,
         payment_method: paymentMethod,
@@ -35,10 +34,11 @@ const Checkout = () => {
       
       toast.success('Order placed successfully!');
       clearCart();
-      navigate(`/order-success?orderId=${orderData.id}`);
-    } catch (error) {
+      navigate(`/order-success?orderId=${orderData.order_id}`);
+    } catch (error: any) {
       console.error('Failed to place order:', error);
-      toast.error('Failed to place order. Please try again.');
+      const message = error?.response?.data?.message || 'Failed to place order. Please try again.';
+      toast.error(message);
     } finally {
       setIsPlacingOrder(false);
     }
@@ -75,7 +75,7 @@ const Checkout = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(['full_name', 'phone', 'street', 'city', 'state', 'pincode'] as const).map(field => (
               <div key={field} className={field === 'street' ? 'md:col-span-2' : ''}>
-                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1 block capitalize">
+                <label className="text-xs font-medium tracking-wider text-muted-foreground mb-1 block capitalize">
                   {field.replace('_', ' ')}
                 </label>
                 <input value={address[field]} onChange={e => setAddress({ ...address, [field]: e.target.value })}

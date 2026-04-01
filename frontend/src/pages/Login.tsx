@@ -47,7 +47,7 @@ const Login = () => {
           <p className="font-medium mb-1">Demo accounts:</p>
           <p>Admin: admin@brandessence.com</p>
           <p>User: priya@email.com</p>
-          <p className="mt-0.5 italic">Any password works</p>
+          <p className="mt-0.5 italic">Password: password123</p>
         </div>
       </div>
     </div>

@@ -21,13 +21,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const stored = localStorage.getItem('be_user');
       const token = localStorage.getItem('be_token');
 
-      if (stored && token) {
+      if (token) {
         try {
-          setUser(JSON.parse(stored));
+          const me = await authAPI.getMe();
+          setUser(me);
+          localStorage.setItem('be_user', JSON.stringify(me));
         } catch (error) {
+          setUser(null);
           localStorage.removeItem('be_user');
           localStorage.removeItem('be_token');
         }
@@ -52,6 +54,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return false;
     } catch (error: any) {
+      setUser(null);
+      localStorage.removeItem('be_token');
+      localStorage.removeItem('be_user');
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);
       return false;

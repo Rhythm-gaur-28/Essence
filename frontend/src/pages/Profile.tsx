@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { sampleOrders, formatPrice } from '@/data/mockData';
+import { orderAPI } from '@/lib/api';
+import { formatPrice } from '@/lib/format';
+import { Order } from '@/types';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -15,6 +17,25 @@ const Profile = () => {
   const [tab, setTab] = useState<'orders' | 'settings'>('orders');
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        setIsLoadingOrders(true);
+        const data = await orderAPI.getMyOrders();
+        setOrders(data || []);
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+        setOrders([]);
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    loadOrders();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 md:px-8 py-8 max-w-4xl">
@@ -33,7 +54,9 @@ const Profile = () => {
       {/* Orders */}
       {tab === 'orders' && (
         <div className="space-y-4">
-          {sampleOrders.length > 0 ? sampleOrders.map(order => (
+          {isLoadingOrders ? (
+            <p className="text-center text-muted-foreground py-10">Loading your orders...</p>
+          ) : orders.length > 0 ? orders.map(order => (
             <div key={order.id} className="bg-card rounded-xl p-5 border border-border">
               <div className="flex items-center justify-between mb-3">
                 <div>

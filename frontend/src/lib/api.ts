@@ -1,6 +1,20 @@
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
+
+const API_ORIGIN = API_BASE_URL.startsWith('http')
+  ? new URL(API_BASE_URL).origin
+  : window.location.origin;
+
+const resolveAssetUrl = (assetUrl?: string | null) => {
+  if (!assetUrl) return '';
+  if (/^(https?:)?\/\//i.test(assetUrl) || assetUrl.startsWith('data:') || assetUrl.startsWith('blob:')) {
+    return assetUrl;
+  }
+  return `${API_ORIGIN}${assetUrl.startsWith('/') ? '' : '/'}${assetUrl}`;
+};
 
 // Create axios instance
 const apiClient = axios.create({
@@ -23,7 +37,11 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url || '';
+    const isAuthRequest = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+
+    // Do not force-redirect on auth endpoints; let UI show proper error messages.
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('be_token');
       localStorage.removeItem('be_user');
       window.location.href = '/login';
@@ -31,6 +49,30 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+const normalizeProduct = (product: any) => ({
+  ...product,
+  price: Number(product.price || 0),
+  discount_price: product.discount_price !== null && product.discount_price !== undefined
+    ? Number(product.discount_price)
+    : null,
+  rating: Number(product.rating ?? product.rating_avg ?? 0),
+  review_count: Number(product.review_count ?? product.reviews?.length ?? 0),
+  brand_name: product.brand_name || product.Brand?.name || '',
+  category_name: product.category_name || product.Category?.name || '',
+  image_url: resolveAssetUrl(product.image_url),
+  created_at: product.created_at || new Date().toISOString(),
+});
+
+const normalizeReview = (review: any) => ({
+  id: review.id,
+  user_id: review.user_id || review.User?.id || 0,
+  user_name: review.user_name || review.user?.name || review.User?.name || 'Anonymous',
+  product_id: review.product_id,
+  rating: Number(review.rating || 0),
+  comment: review.comment || '',
+  created_at: review.created_at,
+});
 
 // ==================== AUTH APIs ====================
 export const authAPI = {
@@ -73,17 +115,22 @@ export const productAPI = {
     });
 
     const { data } = await apiClient.get(`/products?${params.toString()}`);
-    return data;
+    return {
+      ...data,
+      products: (data.products || []).map(normalizeProduct),
+    };
   },
 
   getById: async (id: number) => {
     const { data } = await apiClient.get(`/products/${id}`);
-    return data;
+    return normalizeProduct(data);
   },
 
-  create: async (productData: FormData) => {
+  create: async (productData: FormData | object) => {
     const { data } = await apiClient.post('/admin/products', productData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: productData instanceof FormData
+        ? { 'Content-Type': 'multipart/form-data' }
+        : { 'Content-Type': 'application/json' },
     });
     return data;
   },
@@ -110,9 +157,11 @@ export const brandAPI = {
     return data;
   },
 
-  create: async (brandData: FormData) => {
+  create: async (brandData: FormData | object) => {
     const { data } = await apiClient.post('/admin/brands', brandData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: brandData instanceof FormData
+        ? { 'Content-Type': 'multipart/form-data' }
+        : { 'Content-Type': 'application/json' },
     });
     return data;
   },
@@ -139,9 +188,11 @@ export const categoryAPI = {
     return data;
   },
 
-  create: async (categoryData: FormData) => {
+  create: async (categoryData: FormData | object) => {
     const { data } = await apiClient.post('/admin/categories', categoryData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: categoryData instanceof FormData
+        ? { 'Content-Type': 'multipart/form-data' }
+        : { 'Content-Type': 'application/json' },
     });
     return data;
   },
@@ -165,7 +216,10 @@ export const categoryAPI = {
 export const cartAPI = {
   getAll: async () => {
     const { data } = await apiClient.get('/cart');
-    return data;
+    return (data || []).map((item: any) => ({
+      ...item,
+      product: normalizeProduct(item.product || {}),
+    }));
   },
 
   add: async (product_id: number, quantity: number = 1) => {
@@ -188,7 +242,11 @@ export const cartAPI = {
 export const wishlistAPI = {
   getAll: async () => {
     const { data } = await apiClient.get('/wishlist');
-    return data;
+    return (data || []).map((item: any) => ({
+      ...item,
+      product_id: item.product_id || item.product?.id,
+      product: normalizeProduct(item.product || {}),
+    }));
   },
 
   add: async (product_id: number) => {
@@ -243,7 +301,7 @@ export const orderAPI = {
 export const reviewAPI = {
   getByProduct: async (productId: number) => {
     const { data } = await apiClient.get(`/reviews/${productId}`);
-    return data;
+    return (data || []).map(normalizeReview);
   },
 
   create: async (product_id: number, rating: number, comment?: string) => {
@@ -297,9 +355,11 @@ export const bannerAPI = {
     return data;
   },
 
-  create: async (bannerData: FormData) => {
+  create: async (bannerData: FormData | object) => {
     const { data } = await apiClient.post('/admin/banners', bannerData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: bannerData instanceof FormData
+        ? { 'Content-Type': 'multipart/form-data' }
+        : { 'Content-Type': 'application/json' },
     });
     return data;
   },
@@ -358,7 +418,7 @@ export const userAPI = {
     return data;
   },
 
-  update: async (id: number, userData: { role?: string; [key: string]: any }) => {
+  update: async (id: number, userData: { role?: string; [key: string]: unknown }) => {
     const { data } = await apiClient.put(`/admin/users/${id}`, userData);
     return data;
   },

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CartItem, Product } from '@/types';
+import { CartItem } from '@/types';
 import { cartAPI, couponAPI } from '@/lib/api';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
@@ -9,7 +9,7 @@ interface CartContextType {
   cartCount: number;
   cartTotal: number;
   isLoading: boolean;
-  addToCart: (product: Product, qty?: number) => Promise<void>;
+  addToCart: (productId: number, qty?: number) => Promise<void>;
   removeFromCart: (cartItemId: number) => Promise<void>;
   updateQty: (cartItemId: number, qty: number) => Promise<void>;
   clearCart: () => void;
@@ -55,9 +55,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const discountAmount = appliedCoupon ? Math.round(cartTotal * appliedCoupon.discount_percent / 100) : 0;
   const finalTotal = cartTotal - discountAmount;
 
-  const addToCart = async (product: Product, qty = 1) => {
+  const addToCart = async (productId: number, qty = 1) => {
     try {
-      await cartAPI.add(product.id, qty);
+      await cartAPI.add(productId, qty);
       await loadCart();
       toast.success('Added to cart');
     } catch (error: any) {

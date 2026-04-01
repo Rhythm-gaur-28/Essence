@@ -1,20 +1,51 @@
-import React, { useState } from 'react';
-import { brands as mockBrands, } from '@/data/mockData';
+import React, { useEffect, useState } from 'react';
 import { Brand } from '@/types';
 import { Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { brandAPI } from '@/lib/api';
 
 const ManageBrands = () => {
-  const [brandList, setBrandList] = useState<Brand[]>(mockBrands);
+  const [brandList, setBrandList] = useState<Brand[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', country: '', description: '' });
 
-  const handleAdd = (e: React.FormEvent) => {
+  const loadBrands = async () => {
+    try {
+      const data = await brandAPI.getAll();
+      setBrandList(data || []);
+    } catch (error) {
+      console.error('Failed to load brands:', error);
+      toast.error('Failed to load brands');
+    }
+  };
+
+  useEffect(() => {
+    loadBrands();
+  }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBrandList(prev => [...prev, { id: Date.now(), ...form, logo_url: '' }]);
-    setForm({ name: '', country: '', description: '' });
-    setShowForm(false);
-    toast.success('Brand added');
+    try {
+      await brandAPI.create(form);
+      setForm({ name: '', country: '', description: '' });
+      setShowForm(false);
+      await loadBrands();
+      toast.success('Brand added');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to create brand';
+      toast.error(message);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await brandAPI.delete(id);
+      setBrandList(prev => prev.filter(x => x.id !== id));
+      toast.success('Deleted');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to delete brand';
+      toast.error(message);
+    }
   };
 
   return (
@@ -53,7 +84,7 @@ const ManageBrands = () => {
                 <td className="p-3 font-medium">{b.name}</td>
                 <td className="p-3 text-muted-foreground">{b.country}</td>
                 <td className="p-3 text-right">
-                  <button onClick={() => { setBrandList(prev => prev.filter(x => x.id !== b.id)); toast.success('Deleted'); }}
+                  <button onClick={() => handleDelete(b.id)}
                     className="p-1.5 text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>

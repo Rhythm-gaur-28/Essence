@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { Product } from '@/types';
-import { formatPrice } from '@/data/mockData';
+import { formatPrice } from '@/lib/format';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import heroImg from '@/assets/perfume-hero.png';
@@ -33,7 +33,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     ? Math.round(((product.price - product.discount_price) / product.price) * 100)
     : 0;
 
-  const productImage = scentImages[product.scent_family] || heroImg;
+  const productImage = product.image_url || scentImages[product.scent_family] || heroImg;
 
   return (
     <div className="group bg-card rounded-2xl overflow-hidden border border-border card-hover">
@@ -83,7 +83,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
           <button
-            onClick={() => addToCart(product)}
+            onClick={() => addToCart(product.id)}
             className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
             title="Add to Cart"
           >

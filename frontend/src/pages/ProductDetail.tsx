@@ -8,16 +8,13 @@ import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import ProductCard from '@/components/ProductCard';
 import toast from 'react-hot-toast';
-
-const formatPrice = (price: number) => {
-  return `₹${price.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-};
+import { formatPrice } from '@/lib/format';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -81,12 +78,9 @@ const ProductDetail = () => {
 
     try {
       setIsSubmittingReview(true);
-      const newReview = await reviewAPI.create(product.id, {
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-      
-      setReviews(prev => [newReview, ...prev]);
+      await reviewAPI.create(product.id, reviewRating, reviewComment);
+      const refreshedReviews = await reviewAPI.getByProduct(product.id);
+      setReviews(refreshedReviews);
       setReviewComment('');
       setReviewRating(5);
       toast.success('Review submitted!');
@@ -132,9 +126,13 @@ const ProductDetail = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-16">
         {/* Image */}
         <div className="bg-muted rounded-xl overflow-hidden aspect-square max-w-[400px] mx-auto w-full flex items-center justify-center">
-          <div className="w-full h-full bg-gradient-to-br from-blush to-warm-beige flex items-center justify-center">
-            <span className="text-6xl opacity-30">🌸</span>
-          </div>
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-4" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-blush to-warm-beige flex items-center justify-center">
+              <span className="text-6xl opacity-30">🌸</span>
+            </div>
+          )}
         </div>
 
         {/* Details */}

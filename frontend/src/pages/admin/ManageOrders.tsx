@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
-import { sampleOrders, formatPrice } from '@/data/mockData';
+import React, { useEffect, useState } from 'react';
+import { formatPrice } from '@/lib/format';
 import { Order } from '@/types';
 import toast from 'react-hot-toast';
+import { orderAPI } from '@/lib/api';
 
 const ManageOrders = () => {
-  const [orders, setOrders] = useState<Order[]>(sampleOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
 
-  const updateStatus = (id: number, status: Order['status']) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-    toast.success(`Order #${id} updated to ${status}`);
+  const loadOrders = async () => {
+    try {
+      const data = await orderAPI.getAll({ page: 1, limit: 100 });
+      setOrders(data.orders || []);
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+      toast.error('Failed to load orders');
+    }
+  };
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const updateStatus = async (id: number, status: Order['status']) => {
+    try {
+      await orderAPI.updateStatus(id, status);
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      toast.success(`Order #${id} updated to ${status}`);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to update order status';
+      toast.error(message);
+    }
   };
 
   return (

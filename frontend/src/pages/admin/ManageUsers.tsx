@@ -1,14 +1,38 @@
-import React, { useState } from 'react';
-import { users as mockUsers } from '@/data/mockData';
+import React, { useEffect, useState } from 'react';
 import { User } from '@/types';
 import toast from 'react-hot-toast';
+import { userAPI } from '@/lib/api';
 
 const ManageUsers = () => {
-  const [userList, setUserList] = useState<User[]>(mockUsers);
+  const [userList, setUserList] = useState<User[]>([]);
 
-  const toggleRole = (id: number) => {
-    setUserList(prev => prev.map(u => u.id === id ? { ...u, role: u.role === 'admin' ? 'user' : 'admin' } : u));
-    toast.success('User role updated');
+  const loadUsers = async () => {
+    try {
+      const data = await userAPI.getAll({ page: 1, limit: 100 });
+      setUserList(data.users || []);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+      toast.error('Failed to load users');
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const toggleRole = async (id: number) => {
+    const target = userList.find((u) => u.id === id);
+    if (!target) return;
+
+    const nextRole = target.role === 'admin' ? 'user' : 'admin';
+    try {
+      await userAPI.update(id, { role: nextRole });
+      setUserList(prev => prev.map(u => u.id === id ? { ...u, role: nextRole } : u));
+      toast.success('User role updated');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to update user role';
+      toast.error(message);
+    }
   };
 
   return (

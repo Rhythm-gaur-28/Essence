@@ -1,28 +1,66 @@
-import React, { useState } from 'react';
-import { coupons as mockCoupons } from '@/data/mockData';
+import React, { useEffect, useState } from 'react';
 import { Coupon } from '@/types';
 import { Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { couponAPI } from '@/lib/api';
 
 const ManageCoupons = () => {
-  const [couponList, setCouponList] = useState<Coupon[]>(mockCoupons);
+  const [couponList, setCouponList] = useState<Coupon[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ code: '', discount_percent: '', max_uses: '', expiry_date: '' });
 
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCouponList(prev => [...prev, {
-      id: Date.now(), code: form.code.toUpperCase(),
-      discount_percent: Number(form.discount_percent), max_uses: Number(form.max_uses),
-      used_count: 0, expiry_date: form.expiry_date, is_active: true,
-    }]);
-    setForm({ code: '', discount_percent: '', max_uses: '', expiry_date: '' });
-    setShowForm(false);
-    toast.success('Coupon created');
+  const loadCoupons = async () => {
+    try {
+      const data = await couponAPI.getAll();
+      setCouponList(data || []);
+    } catch (error) {
+      console.error('Failed to load coupons:', error);
+      toast.error('Failed to load coupons');
+    }
   };
 
-  const toggleActive = (id: number) => {
-    setCouponList(prev => prev.map(c => c.id === id ? { ...c, is_active: !c.is_active } : c));
+  useEffect(() => {
+    loadCoupons();
+  }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await couponAPI.create({
+        code: form.code,
+        discount_percent: Number(form.discount_percent),
+        max_uses: Number(form.max_uses),
+        expiry_date: form.expiry_date,
+      });
+      setForm({ code: '', discount_percent: '', max_uses: '', expiry_date: '' });
+      setShowForm(false);
+      await loadCoupons();
+      toast.success('Coupon created');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to create coupon';
+      toast.error(message);
+    }
+  };
+
+  const toggleActive = async (id: number, isActive: boolean) => {
+    try {
+      await couponAPI.update(id, { is_active: !isActive });
+      setCouponList(prev => prev.map(c => c.id === id ? { ...c, is_active: !c.is_active } : c));
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to update coupon';
+      toast.error(message);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await couponAPI.delete(id);
+      setCouponList(prev => prev.filter(x => x.id !== id));
+      toast.success('Deleted');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to delete coupon';
+      toast.error(message);
+    }
   };
 
   return (
@@ -68,13 +106,13 @@ const ManageCoupons = () => {
                 <td className="p-3 text-muted-foreground">{c.used_count}/{c.max_uses}</td>
                 <td className="p-3 text-muted-foreground">{c.expiry_date}</td>
                 <td className="p-3">
-                  <button onClick={() => toggleActive(c.id)}
+                  <button onClick={() => toggleActive(c.id, c.is_active)}
                     className={`text-xs px-2 py-1 rounded-full ${c.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {c.is_active ? 'Active' : 'Inactive'}
                   </button>
                 </td>
                 <td className="p-3 text-right">
-                  <button onClick={() => { setCouponList(prev => prev.filter(x => x.id !== c.id)); toast.success('Deleted'); }}
+                  <button onClick={() => handleDelete(c.id)}
                     className="p-1.5 text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>

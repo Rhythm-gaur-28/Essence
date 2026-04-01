@@ -16,6 +16,7 @@ const getCart = async (req, res) => {
 
     const formattedCart = cartItems.map(item => ({
       id: item.id,
+      product_id: item.product_id,
       product: item.Product,
       quantity: item.quantity,
     }));
