@@ -15,40 +15,69 @@ router.post("/send-otp", async (req, res) => {
       "SELECT * FROM users WHERE email=?",
       [email],
       async (err, result) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ msg: "Database error" });
+        }
+
         if (result.length > 0) {
           return res.status(400).json({ msg: "Email already exists" });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = Math.floor(
+          100000 + Math.random() * 900000
+        ).toString();
 
         const hashed = await bcrypt.hash(password, 10);
 
-        const expires = new Date(Date.now() + 5 * 60 * 1000);
+        const expires = new Date(
+          Date.now() + 5 * 60 * 1000
+        );
 
         db.query(
           "INSERT INTO otp_verifications (name,email,password,otp,expires_at) VALUES (?,?,?,?,?)",
           [name, email, hashed, otp, expires],
           async (err2) => {
-            if (err2) return res.status(500).json(err2);
+            if (err2) {
+              console.error(err2);
+              return res.status(500).json({
+                msg: "OTP save failed"
+              });
+            }
 
-            await transporter.sendMail({
-              from: process.env.EMAIL_USER,
-              to: email,
-              subject: "Essence OTP Verification",
-              html: `
-                <h2>Your OTP Code</h2>
-                <h1>${otp}</h1>
-                <p>This OTP expires in 5 minutes.</p>
-              `
-            });
+            try {
+              await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Essence OTP Verification",
+                html: `
+                  <h2>Your OTP Code</h2>
+                  <h1>${otp}</h1>
+                  <p>This OTP expires in 5 minutes.</p>
+                `
+              });
 
-            res.json({ msg: "OTP sent successfully" });
+              res.json({
+                msg: "OTP sent successfully"
+              });
+
+            } catch (mailErr) {
+              console.error(mailErr);
+
+              return res.status(500).json({
+                msg: "Email sending failed"
+              });
+            }
           }
         );
       }
     );
   } catch (err) {
-    res.status(500).json(err);
+    console.error(err);
+
+    res.status(500).json({
+      msg: "Server error"
+    });
   }
 });
 

@@ -6,6 +6,7 @@ const path = require("path");
 const app = express();
 
 const allowedOrigins = [
+  "http://localhost:8080",
   "http://localhost:5173",
   "https://essence-black-eta.vercel.app"
 ];
