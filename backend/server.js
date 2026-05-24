@@ -8,7 +8,9 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:8080",
   "http://localhost:5173",
-  "https://essence-black-eta.vercel.app"
+  "https://essence-black-eta.vercel.app",
+  "https://essence-production.up.railway.app/"
+  
 ];
 
 app.use(cors({
