@@ -45,7 +45,7 @@ app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/banners", require("./routes/bannerRoutes"));
 app.use("/api/addresses", require("./routes/addressRoutes"));
 
-const transporter = require("./config/mailer");
+const transporter = require("./config/nodemailer.js");
 
 app.get("/mail-debug", async (req, res) => {
   try {
