@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 30% 97%;
+    --foreground: 150 8% 20%;
+
+    --card: 43 52% 95%;
+    --card-foreground: 150 8% 20%;
+
+    --popover: 40 30% 97%;
+    --popover-foreground: 150 8% 20%;
+
+    --primary: 123 10% 51%;
+    --primary-foreground: 40 30% 97%;
+
+    --secondary: 43 52% 84%;
+    --secondary-foreground: 150 8% 25%;
+
+    --muted: 53 24% 85%;
+    --muted-foreground: 150 6% 45%;
+
+    --accent: 1 62% 75%;
+    --accent-foreground: 40 30% 97%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 43 30% 88%;
+    --input: 43 30% 85%;
+    --ring: 123 10% 51%;
+
+    --radius: 0.75rem;
+
+    --fern: 123 10% 51%;
+    --pistachio: 53 24% 69%;
+    --fennel: 43 52% 84%;
+    --peony: 1 62% 75%;
+    --peach: 22 96% 75%;
+    --honey: 33 96% 76%;
+
+    --sidebar-background: 43 52% 94%;
+    --sidebar-foreground: 150 8% 25%;
+    --sidebar-primary: 123 10% 51%;
+    --sidebar-primary-foreground: 40 30% 97%;
+    --sidebar-accent: 43 52% 84%;
+    --sidebar-accent-foreground: 150 8% 25%;
+    --sidebar-border: 43 30% 88%;
+    --sidebar-ring: 123 10% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .text-price {
+    @apply font-semibold text-foreground;
+  }
+  .text-price-original {
+    @apply line-through text-muted-foreground text-sm;
+  }
+  .card-hover {
+    @apply transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-md;
+  }
+  .btn-primary {
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-full font-medium transition-all duration-200 hover:opacity-90;
+  }
+  .btn-outline {
+    @apply border border-primary text-primary px-6 py-3 rounded-full font-medium transition-all duration-200 hover:bg-primary hover:text-primary-foreground;
+  }
+  .btn-peach {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-200 hover:opacity-90;
+    background: hsl(var(--peach));
+    color: hsl(var(--foreground));
+  }
+  .section-padding {
+    @apply py-20 px-4 md:px-8 lg:px-16;
+  }
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--fennel) / 0.4) 0%, hsl(var(--background)) 30%, hsl(var(--peach) / 0.25) 60%, hsl(var(--peony) / 0.15) 100%);
+  }
+}
