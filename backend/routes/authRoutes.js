@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const createTransporter = require("../config/mailer");
+const createTransporter = require("../config/nodemailer");
 const admin = require("../config/firebaseAdmin");
 
 
