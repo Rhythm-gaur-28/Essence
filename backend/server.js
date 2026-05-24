@@ -45,6 +45,21 @@ app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/banners", require("./routes/bannerRoutes"));
 app.use("/api/addresses", require("./routes/addressRoutes"));
 
+const transporter = require("./config/mailer");
+
+app.get("/mail-debug", async (req, res) => {
+  try {
+    await transporter.verify();
+    res.send("SMTP OK");
+  } catch (err) {
+    console.error("SMTP ERROR:", err);
+    res.status(500).json({
+      error: err.message,
+      code: err.code
+    });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
