@@ -5,35 +5,38 @@ const path = require("path");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:8080"
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Serve uploaded images as static files
+// Serve uploaded images
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.send("Backend API running");
 });
 
-app.use("/api/auth",      require("./routes/authRoutes"));
-app.use("/api/products",  require("./routes/productRoutes"));
-app.use("/api/reviews",   require("./routes/reviewRoutes"));
-app.use("/api/wishlist",  require("./routes/wishlistRoutes"));
-app.use("/api/orders",    require("./routes/orderRoutes"));
-app.use("/api/users",     require("./routes/userRoutes"));
-app.use("/api/brands",    require("./routes/brandRoutes"));
-app.use("/api/coupons",   require("./routes/couponRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/reviews", require("./routes/reviewRoutes"));
+app.use("/api/wishlist", require("./routes/wishlistRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/brands", require("./routes/brandRoutes"));
+app.use("/api/coupons", require("./routes/couponRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
-app.use("/api/upload",    require("./routes/uploadRoutes"));
-app.use("/api/banners",   require("./routes/bannerRoutes"));
+app.use("/api/upload", require("./routes/uploadRoutes"));
+app.use("/api/banners", require("./routes/bannerRoutes"));
 app.use("/api/addresses", require("./routes/addressRoutes"));
 
 const PORT = process.env.PORT || 5000;
 
-// ONLY start server if not testing
-
 if (process.env.NODE_ENV !== "test") {
-
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
