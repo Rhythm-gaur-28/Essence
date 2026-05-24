@@ -1,5 +1,15 @@
 const admin = require("firebase-admin");
 
+if (
+  !process.env.FIREBASE_PROJECT_ID ||
+  !process.env.FIREBASE_PRIVATE_KEY ||
+  !process.env.FIREBASE_CLIENT_EMAIL
+) {
+  console.warn("Firebase env vars missing, skipping Firebase init");
+  module.exports = null;
+  return;
+}
+
 const serviceAccount = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
