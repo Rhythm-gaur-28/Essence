@@ -4,8 +4,8 @@ import { Check, Tag, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/data/mockData';
 import toast from 'react-hot-toast';
-
-const API = 'http://localhost:5000';
+import { API_BASE } from "@/config";
+const API = `${API_BASE}`;
 const steps = ['Address', 'Payment', 'Review'];
 
 const Checkout = () => {

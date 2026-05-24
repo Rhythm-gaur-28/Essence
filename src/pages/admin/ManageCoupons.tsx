@@ -3,6 +3,7 @@ import { Trash2, Plus } from 'lucide-react';
 import { formatDate } from '@/utils/formatDate';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
+import { API_BASE } from "@/config";
 
 const ManageCoupons = () => {
   const token = localStorage.getItem('be_token');
@@ -13,7 +14,7 @@ const ManageCoupons = () => {
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/coupons', {
+    fetch(`${API_BASE}/api/coupons`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -23,7 +24,7 @@ const ManageCoupons = () => {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/coupons', {
+    const res = await fetch(`${API_BASE}/api/coupons`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -45,7 +46,7 @@ const ManageCoupons = () => {
   };
 
   const toggleActive = async (id: number) => {
-    const res = await fetch(`http://localhost:5000/api/coupons/${id}/toggle`, {
+    const res = await fetch(`${API_BASE}/api/coupons/${id}/toggle`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -57,7 +58,7 @@ const ManageCoupons = () => {
   };
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`http://localhost:5000/api/coupons/${id}`, {
+    const res = await fetch(`${API_BASE}/api/coupons/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });

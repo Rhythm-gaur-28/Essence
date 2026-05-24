@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { DollarSign, ShoppingCart, Package, Users, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const API = 'http://localhost:5000';
+import { API_BASE } from "@/config";
+const API = `${API_BASE}`;
 
 const formatPrice = (value: number) =>
   `₹${Number(value || 0).toLocaleString()}`;

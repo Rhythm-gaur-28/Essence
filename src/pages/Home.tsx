@@ -12,7 +12,7 @@ import orientalImg from '@/assets/perfume-oriental.png';
 import freshImg from '@/assets/perfume-fresh.png';
 import gourmandImg from '@/assets/perfume-gourmand.png';
 import collectionImg from '@/assets/perfume-collection.png';
-
+import { API_BASE } from "@/config";
 const scentFamilies = [
   { key: 'floral', label: 'Floral', image: floralImg },
   { key: 'woody', label: 'Woody', image: woodyImg },
@@ -28,22 +28,22 @@ const Home = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products?newArrival=true')
+    fetch(`${API_BASE}/api/products?newArrival=true`)
       .then(r => r.json())
       .then(data => setNewArrivals(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(() => setNewArrivals([]));
 
-    fetch('http://localhost:5000/api/products?featured=true')
+    fetch(`${API_BASE}/api/products?featured=true`)
       .then(r => r.json())
       .then(data => setFeatured(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(() => setFeatured([]));
 
-    fetch('http://localhost:5000/api/products?bestSeller=true')
+    fetch(`${API_BASE}/api/products?bestSeller=true`)
       .then(r => r.json())
       .then(data => setBestSellers(Array.isArray(data) ? data.slice(0, 4) : []))
       .catch(() => setBestSellers([]));
 
-    fetch('http://localhost:5000/api/brands')
+    fetch(`${API_BASE}/api/brands`)
       .then(r => r.json())
       .then(data => setBrands(Array.isArray(data) ? data : []))
       .catch(() => setBrands([]));

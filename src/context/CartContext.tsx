@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { CartItem, Product } from '@/types';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
+import { API_BASE } from "@/config";
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -93,7 +94,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!token) return false;
 
     try {
-      const res = await fetch('http://localhost:5000/api/coupons/apply', {
+      const res = await fetch(`${API_BASE}/api/coupons/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

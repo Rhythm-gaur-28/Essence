@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import ProductCard from '@/components/ProductCard';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
-
+import { API_BASE } from "@/config";
 interface Review {
   id: number;
   user_id: number;
@@ -44,15 +44,15 @@ const ProductDetail = () => {
     setQty(1);
 
     Promise.all([
-      fetch(`http://localhost:5000/api/products/${id}`).then(r => r.json()),
-      fetch(`http://localhost:5000/api/reviews/${id}`).then(r => r.json()),
+      fetch(`${API_BASE}/api/products/${id}`).then(r => r.json()),
+      fetch(`${API_BASE}/api/reviews/${id}`).then(r => r.json()),
     ])
       .then(([prod, revs]) => {
         setProduct(prod || null);
         setReviews(Array.isArray(revs) ? revs : []);
 
         if (prod?.brand_id) {
-          fetch(`http://localhost:5000/api/products?brands=${prod.brand_id}`)
+          fetch(`${API_BASE}/api/products?brands=${prod.brand_id}`)
             .then(r => r.json())
             .then(data => {
               const related = (Array.isArray(data) ? data : [])
@@ -118,7 +118,7 @@ const ProductDetail = () => {
 
     const token = localStorage.getItem('be_token');
     try {
-      const res = await fetch(`http://localhost:5000/api/reviews/${product.id}`, {
+      const res = await fetch(`${API_BASE}/api/reviews/${product.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ rating: reviewRating, comment: reviewComment }),
@@ -152,7 +152,7 @@ const ProductDetail = () => {
   const handleDeleteReview = async (reviewId: number) => {
     const token = localStorage.getItem('be_token');
     try {
-      const res = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
+      const res = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -188,7 +188,7 @@ const ProductDetail = () => {
         <div className="bg-muted rounded-xl overflow-hidden aspect-square max-w-[400px] mx-auto w-full flex items-center justify-center">
           {product.image_url ? (
             <img
-              src={product.image_url.startsWith('http') ? product.image_url : `http://localhost:5000${product.image_url}`}
+              src={product.image_url.startsWith('http') ? product.image_url : `${API_BASE}${product.image_url}`}
               alt={product.name}
               className="w-full h-full object-cover"
             />

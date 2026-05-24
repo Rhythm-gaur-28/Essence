@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { formatPrice } from '@/data/mockData';
 import { Product, Brand } from '@/types';
+import { API_BASE } from "@/config";
 
 function fuzzyFilter(products: Product[], query: string): Product[] {
   const terms = query.toLowerCase().trim().split(/\s+/);
@@ -46,7 +47,7 @@ const Shop = () => {
 
   // Fetch brands once
   useEffect(() => {
-    fetch('http://localhost:5000/api/brands')
+    fetch(`${API_BASE}/api/brands`)
       .then(r => r.json())
       .then(data => setBrands(Array.isArray(data) ? data : []))
       .catch(() => setBrands([]));
@@ -69,7 +70,7 @@ const Shop = () => {
     if (isBestSeller) params.set('bestSeller', 'true');
     // No sort param — all sorting done client-side for instant response
 
-    fetch(`http://localhost:5000/api/products?${params.toString()}`)
+    fetch(`${API_BASE}/api/products?${params.toString()}`)
       .then(r => r.json())
       .then(data => setProducts(Array.isArray(data) ? data : []))
       .catch(() => setProducts([]))

@@ -7,6 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
+import { API_BASE } from "@/config";
 
 import heroImg from '@/assets/perfume-hero.png';
 import floralImg from '@/assets/perfume-floral.png';
@@ -23,7 +24,7 @@ const scentImages: Record<string, string> = {
   gourmand: gourmandImg,
 };
 
-const API = 'http://localhost:5000';
+const API = API_BASE;
 
 interface ProductCardProps {
   product: Product;

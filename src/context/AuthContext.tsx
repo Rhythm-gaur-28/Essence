@@ -8,6 +8,7 @@ import React, {
 
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/firebase";
+import { API_BASE } from "@/config";
 
 interface User {
   id: number;
@@ -69,7 +70,7 @@ export const AuthProvider = ({
     try {
 
       const res = await fetch(
-        "http://localhost:5000/api/auth/login",
+        `${API_BASE}/api/auth/login`,
         {
           method: "POST",
           headers: {
@@ -117,7 +118,7 @@ export const AuthProvider = ({
     try {
 
       const res = await fetch(
-        "http://localhost:5000/api/auth/send-otp",
+        `${API_BASE}/api/auth/send-otp`,
         {
           method: "POST",
           headers: {
@@ -149,7 +150,7 @@ export const AuthProvider = ({
     try {
 
       const res = await fetch(
-        "http://localhost:5000/api/auth/verify-otp",
+        `${API_BASE}/api/auth/verify-otp`,
         {
           method: "POST",
           headers: {
@@ -187,7 +188,7 @@ export const AuthProvider = ({
         await result.user.getIdToken();
 
       const res = await fetch(
-        "http://localhost:5000/api/auth/google-login",
+        `${API_BASE}/api/auth/google-login`,
         {
           method: "POST",
           headers: {

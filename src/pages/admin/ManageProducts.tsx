@@ -4,6 +4,7 @@ import { Trash2, Pencil, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
+import { API_BASE } from "@/config";
 
 const ManageProducts = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const ManageProducts = () => {
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products', {
+    fetch(`${API_BASE}/api/products`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -24,7 +25,7 @@ const ManageProducts = () => {
   }, [token]);
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+    const res = await fetch(`${API_BASE}/api/products/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -102,7 +103,7 @@ const ManageProducts = () => {
                       <div className="w-10 h-10 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                         {p.image_url ? (
                           <img
-                            src={p.image_url.startsWith('http') ? p.image_url : `http://localhost:5000${p.image_url}`}
+                            src={p.image_url.startsWith('http') ? p.image_url : `${API_BASE}${p.image_url}`}
                             alt={p.name}
                             className="w-full h-full object-cover"
                           />

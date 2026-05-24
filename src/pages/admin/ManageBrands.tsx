@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
+import { API_BASE } from "@/config";
 
 const ManageBrands = () => {
   const token = localStorage.getItem('be_token');
@@ -12,7 +13,7 @@ const ManageBrands = () => {
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/brands', {
+    fetch(`${API_BASE}/api/brands`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -22,7 +23,7 @@ const ManageBrands = () => {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/brands', {
+    const res = await fetch(`${API_BASE}/api/brands`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(form)
@@ -39,7 +40,7 @@ const ManageBrands = () => {
   };
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`http://localhost:5000/api/brands/${id}`, {
+    const res = await fetch(`${API_BASE}/api/brands/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });

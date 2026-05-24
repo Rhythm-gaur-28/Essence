@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import ConfirmModal from '@/components/ConfirmModal';
+import { API_BASE } from "@/config";
 
 const formatDate = (val: string) => {
   if (!val) return '—';
@@ -23,7 +24,7 @@ const ManageUsers = () => {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/users', {
+    fetch(`${API_BASE}/api/users`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.json())
@@ -33,7 +34,7 @@ const ManageUsers = () => {
 
   const toggleRole = async (id: number, currentRole: string) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
-    const res = await fetch(`http://localhost:5000/api/users/${id}/role`, {
+    const res = await fetch(`${API_BASE}/api/users/${id}/role`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ role: newRole }),
@@ -48,7 +49,7 @@ const ManageUsers = () => {
   };
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`http://localhost:5000/api/users/${id}`, {
+    const res = await fetch(`${API_BASE}/api/users/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });

@@ -4,8 +4,8 @@ import { formatPrice } from '@/data/mockData';
 import { formatDate } from '@/utils/formatDate';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
-
-const API = 'http://localhost:5000';
+import { API_BASE } from "@/config";
+const API = `${API_BASE}`;
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
   yet_to_be_paid: 'Yet to be Paid',

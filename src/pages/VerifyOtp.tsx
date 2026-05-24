@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
-
+import { API_BASE } from "@/config";
 const VerifyOtp = () => {
 
   const [otp, setOtp] = useState("");
@@ -62,7 +62,7 @@ const VerifyOtp = () => {
     try {
 
       const res = await fetch(
-        "http://localhost:5000/api/auth/resend-otp",
+        `${API_BASE}/api/auth/resend-otp`,
         {
           method: "POST",
           headers: {

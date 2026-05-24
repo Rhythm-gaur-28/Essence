@@ -5,8 +5,8 @@ import { formatDate } from '@/utils/formatDate';
 import { Pencil, Trash2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
-
-const API = 'http://localhost:5000';
+import { API_BASE } from "@/config";
+const API = `${API_BASE}`;
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',

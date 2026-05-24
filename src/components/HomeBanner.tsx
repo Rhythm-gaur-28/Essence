@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_BASE } from "@/config";
 
 interface Banner {
   id: number;
@@ -9,7 +10,7 @@ interface Banner {
   link: string | null;
 }
 
-const API = 'http://localhost:5000';
+const API = API_BASE;
 
 const imgSrc = (url: string) => (url.startsWith('http') ? url : `${API}${url}`);
 

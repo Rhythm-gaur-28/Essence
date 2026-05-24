@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { Product, WishlistItem } from '@/types';
 import toast from 'react-hot-toast';
 import { useAuth } from "@/context/AuthContext";
-
+import { API_BASE } from "@/config";
 interface WishlistContextType {
   wishlistItems: WishlistItem[];
   isInWishlist: (productId: number) => boolean;
@@ -25,7 +25,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     const token = localStorage.getItem("be_token");
     if (!token) return;
 
-    fetch("http://localhost:5000/api/wishlist", {
+    fetch(`${API_BASE}/api/wishlist`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -54,7 +54,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (isInWishlist(product.id)) {
-      await fetch(`http://localhost:5000/api/wishlist/${product.id}`, {
+      await fetch(`${API_BASE}/api/wishlist/${product.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -64,7 +64,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       );
 
     } else {
-      await fetch(`http://localhost:5000/api/wishlist/${product.id}`, {
+      await fetch(`${API_BASE}/api/wishlist/${product.id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -80,7 +80,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     const token = localStorage.getItem("be_token");
     if (!token) return;
 
-    await fetch(`http://localhost:5000/api/wishlist/${productId}`, {
+    await fetch(`${API_BASE}/api/wishlist/${productId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });

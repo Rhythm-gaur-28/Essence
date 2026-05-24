@@ -5,8 +5,9 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { formatPrice } from '@/data/mockData';
 import heroImg from '@/assets/perfume-hero.png';
+import { API_BASE } from "@/config";
 
-const API = 'http://localhost:5000';
+const API = `${API_BASE}`;
 
 const getProductImage = (imageUrl: string | undefined) => {
   if (imageUrl && imageUrl.trim() !== '') {

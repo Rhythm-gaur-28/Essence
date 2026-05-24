@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Upload, X, ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import { API_BASE } from "@/config";
 
 const scentFamilies = [
   "floral", "woody", "oriental", "fresh", "gourmand",
@@ -47,12 +48,12 @@ export default function ProductForm() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/brands")
+    fetch(`${API_BASE}/api/brands`)
       .then(r => r.json())
       .then(data => setBrands(Array.isArray(data) ? data : []));
 
     if (id) {
-      fetch(`http://localhost:5000/api/products/${id}`)
+      fetch(`${API_BASE}/api/products/${id}`)
         .then(r => r.json())
         .then(data => {
           if (data) {
@@ -61,7 +62,7 @@ export default function ProductForm() {
               setImagePreview(
                 data.image_url.startsWith("http")
                   ? data.image_url
-                  : `http://localhost:5000${data.image_url}`
+                  : `${API_BASE}${data.image_url}`
               );
             }
           }
@@ -122,7 +123,7 @@ export default function ProductForm() {
       const formData = new FormData();
       formData.append("image", imageFile);
 
-      const res = await fetch("http://localhost:5000/api/upload", {
+      const res = await fetch(`${API_BASE}/api/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -165,8 +166,8 @@ export default function ProductForm() {
 
     const method = isEdit ? "PUT" : "POST";
     const url = isEdit
-      ? `http://localhost:5000/api/products/${id}`
-      : "http://localhost:5000/api/products";
+      ? `${API_BASE}/api/products/${id}`
+      : `${API_BASE}/api/products`;
 
     try {
       const res = await fetch(url, {
