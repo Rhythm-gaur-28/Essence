@@ -1,23 +1,23 @@
 const nodemailer = require("nodemailer");
 const dns = require("dns");
 
-dns.setDefaultResultOrder("ipv4first");
+const resolve4 = dns.promises.resolve4;
 
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.gmail.com",
+  host: "74.125.24.109", // smtp.gmail.com IPv4
   port: 587,
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  family: 4,
+  tls: {
+    rejectUnauthorized: false,
+    servername: "smtp.gmail.com"
+  },
   connectionTimeout: 10000,
   greetingTimeout: 10000,
-  socketTimeout: 10000,
-  tls: {
-    rejectUnauthorized: false
-  }
+  socketTimeout: 10000
 });
 
 module.exports = transporter;
